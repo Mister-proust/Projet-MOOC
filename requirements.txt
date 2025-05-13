@@ -1,2 +1,3 @@
 pandas
 pymongo
+sentence-transformers
