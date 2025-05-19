@@ -27,3 +27,13 @@ Projet Data IA 2024 - Greta Centre Val de Loire/Simplonline - MOOC
 ```
  deactivate 
 ```
+
+## Docker
+
+```bash
+    # Afficher tous les conteneurs (y compris ceux arrêtés)
+    docker ps -a
+    docker start <nom_du_conteneur>
+    # Verifier les contenenurs lancés
+    docker ps
+```
