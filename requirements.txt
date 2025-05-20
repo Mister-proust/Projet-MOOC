@@ -5,3 +5,5 @@ sentence-transformers
 fastapi[all]
 jinja2
 python-dotenv
+python-dotenv
+bertopic
