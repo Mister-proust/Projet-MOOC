@@ -28,6 +28,13 @@ Projet Data IA 2024 - Greta Centre Val de Loire/Simplonline - MOOC
  deactivate 
 ```
 
+## lancer l'application :
+```python
+#Ouvre un terminal dans le dossier app/, puis lance :
+uvicorn main:app --reload
+```
+
+
 ## Docker
 
 ```bash

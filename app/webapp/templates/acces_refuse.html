@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Accès refusé{% endblock %}
+
+{% block content %}
+<div class="alert alert-warning">
+    <h4>Accès refusé</h4>
+    <p>Vous devez être connecté pour accéder à cette page.</p>
+    <a href="/login" class="btn btn-secondary">Se connecter</a>
+</div>
+{% endblock %}

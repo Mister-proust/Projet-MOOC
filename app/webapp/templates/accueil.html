@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Dashboard MOOCs{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Bienvenue {{ user if user else "visiteur" }} !</h1>
+
+<div class="list-group">
+    <a href="/dashboard/question" class="list-group-item list-group-item-action">❓​ Dashboard question</a>
+    <a href="/dashboard/thread" class="list-group-item list-group-item-action">⭐​ Dashboard analyse des sentiments</a>
+    <a href="/dashboard/threads-cluster" class="list-group-item list-group-item-action">🧵 Cluster des fils de discussion</a>
+    <a href="/dashboard/users-cluster" class="list-group-item list-group-item-action">👥 Cluster des participants</a>
+</div>
+{% endblock %}

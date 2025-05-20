@@ -2,3 +2,6 @@ pandas
 pymongo
 jupyterlab
 sentence-transformers
+fastapi[all]
+jinja2
+python-dotenv
