@@ -1,9 +1,14 @@
-import pandas as pd
+import os
 from bertopic import BERTopic
+import pandas as pd
 
-# Chargement des objets une seule fois
-model = BERTopic.load(".../data/bertopic_original_model")
-df = pd.read_csv(".../data/df_questions.csv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model_path = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "data", "bertopic_original_model"))
+csv_path = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "data", "df_questions.csv"))
+
+model = BERTopic.load(model_path)
+df = pd.read_csv(csv_path)
 
 # Fonction pour obtenir les clusters
 def get_all_clusters():
