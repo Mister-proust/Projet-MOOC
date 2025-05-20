@@ -2,3 +2,5 @@ pandas
 pymongo
 jupyterlab
 sentence-transformers
+python-dotenv
+bertopic
