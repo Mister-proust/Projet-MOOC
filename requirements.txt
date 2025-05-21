@@ -6,3 +6,4 @@ fastapi[all]
 jinja2
 python-dotenv
 bertopic
+transformers
