@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Cluster Participants</h2>
+
+<form method="get">
+    <label for="selected_user">Choisir un participant :</label>
+    <select name="selected_user" id="selected_user" onchange="this.form.submit()">
+        <option disabled selected>-- Sélectionner --</option>
+        {% for u in users %}
+            <option value="{{ u }}" {% if selected_user == u %}selected{% endif %}>{{ u }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if selected_user %}
+    <h3>Top 10 des utilisateurs similaires à {{ selected_user }}</h3>
+    {% if resultats %}
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Utilisateur</th>
+                <th>Sim. Cours</th>
+                <th>Sim. Threads</th>
+                <th>Moyenne</th>
+            </tr>
+            {% for r in resultats %}
+            <tr>
+                <td>{{ r.username }}</td>
+                <td>{{ r.score_cours }}</td>
+                <td>{{ r.score_threads }}</td>
+                <td><strong>{{ r.score_moyen }}</strong></td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Aucune donnée de similarité trouvée.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

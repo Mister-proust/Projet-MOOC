@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from fastapi import HTTPException, status
 from fastapi.responses import HTMLResponse
+from services.dashboard_users_cluster import get_all_usernames, get_similarity_scores
 
 class UnauthorizedAccess(Exception):
     pass
@@ -69,5 +70,17 @@ async def dashboard_threads_cluster(request: Request, user: str = Depends(login_
     return templates.TemplateResponse("dashboard_threads_cluster.html", {"request": request, "user": user})
 
 @app.get("/dashboard/users-cluster")
-async def dashboard_users_cluster(request: Request, user: str = Depends(login_required)):
-    return templates.TemplateResponse("dashboard_users_cluster.html", {"request": request, "user": user})
+async def dashboard_users_cluster(request: Request, user: str = Depends(login_required), selected_user: str = None):
+    users = get_all_usernames()
+    resultats = None
+
+    if selected_user:
+        resultats = get_similarity_scores(selected_user)
+
+    return templates.TemplateResponse("dashboard_users_cluster.html", {
+        "request": request,
+        "user": user,
+        "users": users,
+        "selected_user": selected_user,
+        "resultats": resultats
+    })
