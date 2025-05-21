@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Clusters de Threads</title>
+</head>
+<body>
+    <h1>Dashboard des Clusters de Threads</h1>
+    <p>Connecté en tant que : {{ user }}</p>
+  </div>
+    <h2>Visualisation des clusters (BERTopic)</h2>
+<div>
+    {{ plot_html | safe }}
+</div>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom du Topic</th>
+                    <th>Nbre de Messages</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for topic in topics %}
+                    <tr>
+                        <td>{{ topic.Topic }}</td>
+                        <td>{{ topic.Name }}</td>
+                        <td>{{ topic.Count }}</td>
+                        <td><a href="/dashboard/threads-cluster/{{ topic.Topic }}">Voir messages</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+</body>
+</html>
