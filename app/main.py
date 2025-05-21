@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from fastapi import HTTPException, status
 from fastapi.responses import HTMLResponse
-from services.dashboard_threads_cluster import get_all_clusters, get_messages_by_topic
+from services.dashboard_threads_cluster import get_all_clusters, get_messages_by_topic,  get_bertopic_html
 
 
 class UnauthorizedAccess(Exception):
@@ -69,11 +69,11 @@ async def dashboard_thread(request: Request, user: str = Depends(login_required)
 @app.get("/dashboard/threads-cluster")
 async def dashboard_threads_cluster(request: Request, user: str = Depends(login_required)):
     clusters = get_all_clusters()
+    plot_html = get_bertopic_html()
     return templates.TemplateResponse(
         "dashboard_threads_cluster.html",
-        {"request": request, "user": user, "topics": clusters}
+        {"request": request, "user": user, "topics": clusters, "plot_html": plot_html}
     )
-
 
 @app.get("/dashboard/threads-cluster/{topic_id}")
 def get_cluster_messages(topic_id: int):

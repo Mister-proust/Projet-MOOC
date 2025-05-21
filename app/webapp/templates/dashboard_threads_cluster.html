@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Clusters de Threads</title>
-    <link rel="stylesheet" href="/static/styles.css">  <!-- si tu as un CSS -->
 </head>
 <body>
     <h1>Dashboard des Clusters de Threads</h1>
     <p>Connecté en tant que : {{ user }}</p>
-
-    {% if topics %}
+  </div>
+    <h2>Visualisation des clusters (BERTopic)</h2>
+<div>
+    {{ plot_html | safe }}
+</div>
         <table border="1">
             <thead>
                 <tr>
@@ -30,8 +32,5 @@
                 {% endfor %}
             </tbody>
         </table>
-    {% else %}
-        <p>Aucun topic trouvé.</p>
-    {% endif %}
 </body>
 </html>
