@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse
 from services.dashboard_threads_cluster import get_all_clusters, get_messages_by_topic,  get_bertopic_html
 
 from services.dashboard_users_cluster import get_all_usernames, get_similarity_scores
+from services.dashboard_thread import get_all_courses, get_threads_for_course, get_thread_with_messages
 
 class UnauthorizedAccess(Exception):
     pass
@@ -64,8 +65,40 @@ async def dashboard_question(request: Request, user: str = Depends(login_require
     return templates.TemplateResponse("dashboard_question.html", {"request": request, "user": user})
 
 @app.get("/dashboard/thread")
-async def dashboard_thread(request: Request, user: str = Depends(login_required)):
-    return templates.TemplateResponse("dashboard_thread.html", {"request": request, "user": user})
+async def dashboard_thread_get(request: Request, user: str = Depends(login_required)):
+    courses = get_all_courses()
+    return templates.TemplateResponse("dashboard_thread.html", {
+        "request": request,
+        "user": user,
+        "courses": courses,
+        "threads": [],
+        "selected_course": None,
+        "selected_thread": None,
+        "messages": None
+    })
+
+@app.post("/dashboard/thread")
+async def dashboard_thread_post(request: Request, user: str = Depends(login_required)):
+    form = await request.form()
+    selected_course = form.get("selected_course")
+    selected_thread = form.get("selected_thread")
+
+    courses = get_all_courses()
+    threads = get_threads_for_course(selected_course) if selected_course else []
+
+    messages = None
+    if selected_thread:
+        messages = get_thread_with_messages(selected_thread)
+
+    return templates.TemplateResponse("dashboard_thread.html", {
+        "request": request,
+        "user": user,
+        "courses": courses,
+        "threads": threads,
+        "selected_course": selected_course,
+        "selected_thread": selected_thread,
+        "messages": messages
+    })
 
 @app.get("/dashboard/threads-cluster")
 async def dashboard_threads_cluster(request: Request, user: str = Depends(login_required)):
