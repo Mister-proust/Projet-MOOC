@@ -1,13 +1,14 @@
 from fastapi import FastAPI, Request, Form, Depends
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from fastapi import HTTPException, status
 from fastapi.responses import HTMLResponse
 from services.dashboard_threads_cluster import get_all_clusters, get_messages_by_topic,  get_bertopic_html
-
+from pydantic import BaseModel
 from services.dashboard_users_cluster import get_all_usernames, get_similarity_scores
+from services.dashboard_question import search_similar_message
 
 class UnauthorizedAccess(Exception):
     pass
@@ -62,6 +63,45 @@ async def logout():
 @app.get("/dashboard/question")
 async def dashboard_question(request: Request, user: str = Depends(login_required)):
     return templates.TemplateResponse("dashboard_question.html", {"request": request, "user": user})
+
+class Query(BaseModel):
+    text: str
+
+class ThreadQuery(BaseModel):
+    title: str
+    course_id: str
+
+@app.post("/dashboard/question")
+def search(query: Query):
+    result = search_similar_message(query.text)
+
+    if result:
+        # Conversion des champs non JSON-compatibles
+        result["id"] = str(result["id"])
+        result["course_id"] = str(result["course_id"])
+        result["created_at"] = result["created_at"].isoformat()  # Convertit datetime en chaîne ISO
+
+        return JSONResponse(content={"message": result})
+    else:
+        return JSONResponse(content={"message": "Aucun résultat trouvé."})
+
+@app.post("/dashboard/threadquestion")
+def get_thread(query: ThreadQuery):
+    """Récupère tous les messages d'un fil de discussion"""
+    from services.dashboard_question import get_thread_messages  # Assurez-vous d'importer la fonction
+    
+    messages = get_thread_messages(query.title, query.course_id)
+    
+    if messages:
+        # Conversion des champs non JSON-compatibles pour chaque message
+        for message in messages:
+            message["id"] = str(message["id"])
+            message["course_id"] = str(message["course_id"])
+            message["created_at"] = message["created_at"].isoformat()
+        
+        return JSONResponse(content={"messages": messages})
+    else:
+        return JSONResponse(content={"messages": []})
 
 @app.get("/dashboard/thread")
 async def dashboard_thread(request: Request, user: str = Depends(login_required)):
