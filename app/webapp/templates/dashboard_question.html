@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Recherche Question</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .result-container {
+            margin-top: 20px;
+        }
+        
+        .message-result {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .message-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .message-text {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .thread-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .thread-button:hover {
+            background: #0056b3;
+        }
+        
+        .thread-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .thread-message {
+            background: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .thread-message:last-child {
+            margin-bottom: 0;
+        }
+        
+        .back-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
+        .back-button:hover {
+            background: #545b62;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pose ta question</h1>
+    <form id="question-form">
+        <input type="text" id="question-input" name="text" placeholder="Tape ta question ici" required />
+        <button type="submit">Chercher</button>
+    </form>
+
+    <div id="single-result" class="result-container">
+        <h2>Résultat :</h2>
+        <div id="result"></div>
+    </div>
+
+    <div id="thread-result" class="result-container hidden">
+        <button id="back-button" class="back-button">← Retour au résultat</button>
+        <h2>Fil de discussion complet :</h2>
+        <div id="thread-messages"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById("question-form");
+        const resultElem = document.getElementById("result");
+        const singleResultDiv = document.getElementById("single-result");
+        const threadResultDiv = document.getElementById("thread-result");
+        const threadMessagesDiv = document.getElementById("thread-messages");
+        const backButton = document.getElementById("back-button");
+
+        let currentMessage = null;
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const question = document.getElementById("question-input").value;
+
+            try {
+                const response = await fetch("/dashboard/question", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: question })
+                });
+
+                const data = await response.json();
+
+                if (data.message && typeof data.message === 'object') {
+                    currentMessage = data.message;
+                    displaySingleResult(data.message);
+                } else {
+                    resultElem.innerHTML = "<p>Aucun résultat trouvé.</p>";
+                }
+            } catch (error) {
+                resultElem.innerHTML = "<p>Erreur lors de la recherche.</p>";
+                console.error("Erreur:", error);
+            }
+        });
+
+        function displaySingleResult(message) {
+            const messageHtml = `
+                <div class="message-result">
+                    <div class="message-meta">
+                        <strong>Utilisateur:</strong> ${message.username} | 
+                        <strong>Date:</strong> ${new Date(message.created_at).toLocaleString('fr-FR')} |
+                        <strong>Distance:</strong> ${message.distance ? message.distance.toFixed(4) : 'N/A'}
+                    </div>
+                    <div class="message-text">
+                        ${message.text}
+                    </div>
+                    <button class="thread-button" onclick="loadThread('${message.title}', '${message.course_id}')">
+                        Voir le fil de discussion complet
+                    </button>
+                </div>
+            `;
+            resultElem.innerHTML = messageHtml;
+            
+            // Afficher la section résultat unique et masquer le fil
+            singleResultDiv.classList.remove("hidden");
+            threadResultDiv.classList.add("hidden");
+        }
+
+        async function loadThread(title, courseId) {
+            try {
+                const response = await fetch("/dashboard/threadquestion", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title: title, course_id: courseId })
+                });
+
+                const data = await response.json();
+
+                if (data.messages && data.messages.length > 0) {
+                    displayThread(data.messages, title);
+                } else {
+                    alert("Aucun message trouvé dans ce fil de discussion.");
+                }
+            } catch (error) {
+                alert("Erreur lors du chargement du fil de discussion.");
+                console.error("Erreur:", error);
+            }
+        }
+
+        function displayThread(messages, title) {
+            let threadHtml = `<h3>Fil: ${title}</h3>`;
+            
+            messages.forEach((message, index) => {
+                threadHtml += `
+                    <div class="thread-message">
+                        <div class="message-meta">
+                            <strong>#${index + 1}</strong> - 
+                            <strong>Utilisateur:</strong> ${message.username} | 
+                            <strong>Date:</strong> ${new Date(message.created_at).toLocaleString('fr-FR')}
+                        </div>
+                        <div class="message-text">
+                            ${message.text}
+                        </div>
+                    </div>
+                `;
+            });
+
+            threadMessagesDiv.innerHTML = threadHtml;
+            
+            // Afficher le fil et masquer le résultat unique
+            singleResultDiv.classList.add("hidden");
+            threadResultDiv.classList.remove("hidden");
+        }
+
+        backButton.addEventListener("click", () => {
+            // Retour au résultat unique
+            singleResultDiv.classList.remove("hidden");
+            threadResultDiv.classList.add("hidden");
+        });
+    </script>
+</body>
+</html>
