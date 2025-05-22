@@ -9,6 +9,7 @@ from services.dashboard_threads_cluster import get_all_clusters, get_messages_by
 from pydantic import BaseModel
 from services.dashboard_users_cluster import get_all_usernames, get_similarity_scores
 from services.dashboard_question import search_similar_message
+from services.dashboard_thread import get_all_courses, get_thread_with_messages, get_threads_for_course
 
 class UnauthorizedAccess(Exception):
     pass

@@ -30,6 +30,8 @@ Projet Data IA 2024 - Greta Centre Val de Loire/Simplonline - MOOC
 
 ## lancer l'application :
 ```python
+# Charge le notebook clustering_fildiscussion.ipynb afin d'avoir les modèles
+
 #Ouvre un terminal dans le dossier app/, puis lance :
 uvicorn main:app --reload
 ```

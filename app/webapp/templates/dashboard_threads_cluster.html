@@ -1,36 +1,48 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Clusters de Threads</title>
-</head>
-<body>
-    <h1>Dashboard des Clusters de Threads</h1>
-    <p>Connecté en tant que : {{ user }}</p>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Dashboard des Clusters de Threads</h2>
+
+  <div class="mb-3">
+    <p class="text-muted">Connecté en tant que : <strong>{{ user }}</strong></p>
   </div>
-    <h2>Visualisation des clusters (BERTopic)</h2>
-<div>
-    {{ plot_html | safe }}
+
+  <div class="mb-5">
+    <h4>Visualisation des clusters (BERTopic)</h4>
+    <div class="card shadow-sm p-3">
+      {{ plot_html | safe }}
+    </div>
+  </div>
+
+  <div>
+    <h4 class="mb-3">Liste des clusters</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Nom du Topic</th>
+            <th>Nombre de Messages</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for topic in topics %}
+            <tr>
+              <td>{{ topic.Topic }}</td>
+              <td>{{ topic.Name }}</td>
+              <td>{{ topic.Count }}</td>
+              <td>
+                <a href="/dashboard/threads-cluster/{{ topic.Topic }}" class="btn btn-sm btn-outline-primary">
+                  Voir messages
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nom du Topic</th>
-                    <th>Nbre de Messages</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for topic in topics %}
-                    <tr>
-                        <td>{{ topic.Topic }}</td>
-                        <td>{{ topic.Name }}</td>
-                        <td>{{ topic.Count }}</td>
-                        <td><a href="/dashboard/threads-cluster/{{ topic.Topic }}">Voir messages</a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-</body>
-</html>
+{% endblock %}

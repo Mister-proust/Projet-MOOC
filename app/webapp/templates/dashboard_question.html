@@ -1,219 +1,127 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8" />
-    <title>Recherche Question</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .result-container {
-            margin-top: 20px;
-        }
-        
-        .message-result {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .message-meta {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 10px;
-        }
-        
-        .message-text {
-            background: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        
-        .thread-button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-        
-        .thread-button:hover {
-            background: #0056b3;
-        }
-        
-        .thread-container {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .thread-message {
-            background: white;
-            margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 4px solid #007bff;
-        }
-        
-        .thread-message:last-child {
-            margin-bottom: 0;
-        }
-        
-        .back-button {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
-        
-        .back-button:hover {
-            background: #545b62;
-        }
-        
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <h1>Pose ta question</h1>
-    <form id="question-form">
-        <input type="text" id="question-input" name="text" placeholder="Tape ta question ici" required />
-        <button type="submit">Chercher</button>
-    </form>
+{% extends "base.html" %}
 
-    <div id="single-result" class="result-container">
-        <h2>Résultat :</h2>
-        <div id="result"></div>
-    </div>
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Recherche dans les messages</h2>
 
-    <div id="thread-result" class="result-container hidden">
-        <button id="back-button" class="back-button">← Retour au résultat</button>
-        <h2>Fil de discussion complet :</h2>
-        <div id="thread-messages"></div>
-    </div>
+  <form id="question-form" class="d-flex gap-2 mb-4">
+    <input type="text" id="question-input" name="text" class="form-control" placeholder="Tape ta question ici" required />
+    <button type="submit" class="btn btn-primary">Chercher</button>
+  </form>
 
-    <script>
-        const form = document.getElementById("question-form");
-        const resultElem = document.getElementById("result");
-        const singleResultDiv = document.getElementById("single-result");
-        const threadResultDiv = document.getElementById("thread-result");
-        const threadMessagesDiv = document.getElementById("thread-messages");
-        const backButton = document.getElementById("back-button");
+  <div id="single-result" class="result-container mb-5">
+    <h4>Résultat :</h4>
+    <div id="result"></div>
+  </div>
 
-        let currentMessage = null;
+  <div id="thread-result" class="result-container d-none">
+    <button id="back-button" class="btn btn-secondary mb-3">← Retour au résultat</button>
+    <h4>Fil de discussion complet :</h4>
+    <div id="thread-messages"></div>
+  </div>
+</div>
 
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const question = document.getElementById("question-input").value;
+<script>
+  const form = document.getElementById("question-form");
+  const resultElem = document.getElementById("result");
+  const singleResultDiv = document.getElementById("single-result");
+  const threadResultDiv = document.getElementById("thread-result");
+  const threadMessagesDiv = document.getElementById("thread-messages");
+  const backButton = document.getElementById("back-button");
 
-            try {
-                const response = await fetch("/dashboard/question", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: question })
-                });
+  let currentMessage = null;
 
-                const data = await response.json();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const question = document.getElementById("question-input").value;
 
-                if (data.message && typeof data.message === 'object') {
-                    currentMessage = data.message;
-                    displaySingleResult(data.message);
-                } else {
-                    resultElem.innerHTML = "<p>Aucun résultat trouvé.</p>";
-                }
-            } catch (error) {
-                resultElem.innerHTML = "<p>Erreur lors de la recherche.</p>";
-                console.error("Erreur:", error);
-            }
-        });
+    try {
+      const response = await fetch("/dashboard/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: question })
+      });
 
-        function displaySingleResult(message) {
-            const messageHtml = `
-                <div class="message-result">
-                    <div class="message-meta">
-                        <strong>Utilisateur:</strong> ${message.username} | 
-                        <strong>Date:</strong> ${new Date(message.created_at).toLocaleString('fr-FR')} |
-                        <strong>Distance:</strong> ${message.distance ? message.distance.toFixed(4) : 'N/A'}
-                    </div>
-                    <div class="message-text">
-                        ${message.text}
-                    </div>
-                    <button class="thread-button" onclick="loadThread('${message.title}', '${message.course_id}')">
-                        Voir le fil de discussion complet
-                    </button>
-                </div>
-            `;
-            resultElem.innerHTML = messageHtml;
-            
-            // Afficher la section résultat unique et masquer le fil
-            singleResultDiv.classList.remove("hidden");
-            threadResultDiv.classList.add("hidden");
-        }
+      const data = await response.json();
 
-        async function loadThread(title, courseId) {
-            try {
-                const response = await fetch("/dashboard/threadquestion", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ title: title, course_id: courseId })
-                });
+      if (data.message && typeof data.message === 'object') {
+        currentMessage = data.message;
+        displaySingleResult(data.message);
+      } else {
+        resultElem.innerHTML = "<div class='alert alert-warning'>Aucun résultat trouvé.</div>";
+      }
+    } catch (error) {
+      resultElem.innerHTML = "<div class='alert alert-danger'>Erreur lors de la recherche.</div>";
+      console.error("Erreur:", error);
+    }
+  });
 
-                const data = await response.json();
+  function displaySingleResult(message) {
+    const messageHtml = `
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <div class="mb-2 text-muted">
+            <strong>Utilisateur:</strong> ${message.username} | 
+            <strong>Date:</strong> ${new Date(message.created_at).toLocaleString('fr-FR')} |
+            <strong>Distance:</strong> ${message.distance ? message.distance.toFixed(4) : 'N/A'}
+          </div>
+          <p class="card-text">${message.text}</p>
+          <button class="btn btn-outline-primary btn-sm" onclick="loadThread('${message.title}', '${message.course_id}')">
+            Voir le fil de discussion complet
+          </button>
+        </div>
+      </div>
+    `;
+    resultElem.innerHTML = messageHtml;
+    singleResultDiv.classList.remove("d-none");
+    threadResultDiv.classList.add("d-none");
+  }
 
-                if (data.messages && data.messages.length > 0) {
-                    displayThread(data.messages, title);
-                } else {
-                    alert("Aucun message trouvé dans ce fil de discussion.");
-                }
-            } catch (error) {
-                alert("Erreur lors du chargement du fil de discussion.");
-                console.error("Erreur:", error);
-            }
-        }
+  async function loadThread(title, courseId) {
+    try {
+      const response = await fetch("/dashboard/threadquestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title, course_id: courseId })
+      });
 
-        function displayThread(messages, title) {
-            let threadHtml = `<h3>Fil: ${title}</h3>`;
-            
-            messages.forEach((message, index) => {
-                threadHtml += `
-                    <div class="thread-message">
-                        <div class="message-meta">
-                            <strong>#${index + 1}</strong> - 
-                            <strong>Utilisateur:</strong> ${message.username} | 
-                            <strong>Date:</strong> ${new Date(message.created_at).toLocaleString('fr-FR')}
-                        </div>
-                        <div class="message-text">
-                            ${message.text}
-                        </div>
-                    </div>
-                `;
-            });
+      const data = await response.json();
 
-            threadMessagesDiv.innerHTML = threadHtml;
-            
-            // Afficher le fil et masquer le résultat unique
-            singleResultDiv.classList.add("hidden");
-            threadResultDiv.classList.remove("hidden");
-        }
+      if (data.messages && data.messages.length > 0) {
+        displayThread(data.messages, title);
+      } else {
+        alert("Aucun message trouvé dans ce fil de discussion.");
+      }
+    } catch (error) {
+      alert("Erreur lors du chargement du fil de discussion.");
+      console.error("Erreur:", error);
+    }
+  }
 
-        backButton.addEventListener("click", () => {
-            // Retour au résultat unique
-            singleResultDiv.classList.remove("hidden");
-            threadResultDiv.classList.add("hidden");
-        });
-    </script>
-</body>
-</html>
+  function displayThread(messages, title) {
+    let threadHtml = `<h5 class="mb-3">Fil : ${title}</h5>`;
+    
+    messages.forEach((message, index) => {
+      threadHtml += `
+        <div class="border-start border-primary ps-3 mb-3">
+          <div class="text-muted small mb-1">
+            <strong>#${index + 1}</strong> - 
+            <strong>Utilisateur:</strong> ${message.username} | 
+            <strong>Date:</strong> ${new Date(message.created_at).toLocaleString('fr-FR')}
+          </div>
+          <div>${message.text}</div>
+        </div>
+      `;
+    });
+
+    threadMessagesDiv.innerHTML = threadHtml;
+    singleResultDiv.classList.add("d-none");
+    threadResultDiv.classList.remove("d-none");
+  }
+
+  backButton.addEventListener("click", () => {
+    singleResultDiv.classList.remove("d-none");
+    threadResultDiv.classList.add("d-none");
+  });
+</script>
+{% endblock %}
