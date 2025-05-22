@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Analyse d'un fil de discussion</h2>
+  <form method="post">
+    <div class="mb-3">
+      <label for="selected_course" class="form-label">Sélectionner un cours</label>
+      <select class="form-select" id="selected_course" name="selected_course" onchange="this.form.submit()">
+        <option value="">-- Choisissez un cours --</option>
+        {% for course in courses %}
+          <option value="{{ course }}" {% if selected_course == course %}selected{% endif %}>{{ course }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {% if threads %}
+    <div class="mb-3">
+      <label for="selected_thread" class="form-label">Sélectionner un thread</label>
+      <select class="form-select" id="selected_thread" name="selected_thread">
+        <option value="">-- Choisissez un thread --</option>
+        {% for thread in threads %}
+          <option value="{{ thread.id }}" {% if selected_thread == thread.id %}selected{% endif %}>{{ thread.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Afficher les messages</button>
+    {% endif %}
+  </form>
+
+  {% if messages %}
+  <h2 class="mt-4">Messages du thread sélectionné</h2>
+  <div class="row row-cols-1 g-3 mt-3">
+    {% for msg in messages %}
+      <div class="col">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">{{ msg.username }}</h5>
+            <p class="card-text">{{ msg.text }}</p>
+            <div class="d-flex flex-wrap align-items-center">
+              <span class="badge bg-{{ 'success' if msg.sentiment == 'POSITIVE' else 'danger' if msg.sentiment == 'NEGATIVE' else 'secondary' }} me-2">
+                {{ msg.sentiment }}
+              </span>
+              <span class="badge bg-light text-dark me-2">Score : {{ msg.score }}%</span>
+              {% if msg.language %}
+                <span class="badge bg-light text-dark">Langue : {{ msg.language }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
