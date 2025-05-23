@@ -15,7 +15,17 @@ class UnauthorizedAccess(Exception):
     pass
 
 # Init FastAPI
-app = FastAPI()
+app = FastAPI(
+    title="Dashboard Forums API",
+    description="API pour visualisation, recherche et clustering des discussions de forums MOOCs",
+    version="1.0.0",
+    openapi_tags=[
+        {"name": "Recherche", "description": "Recherche sémantique dans les messages"},
+        {"name": "Threads", "description": "Fil de discussion et messages"},
+        {"name": "Clusters", "description": "Analyse et regroupement par sujet"},
+        {"name": "Utilisateurs", "description": "Clustering des utilisateurs"},
+    ]
+)
 
 @app.exception_handler(UnauthorizedAccess)
 async def unauthorized_handler(request: Request, exc: UnauthorizedAccess):
@@ -72,7 +82,7 @@ class ThreadQuery(BaseModel):
     title: str
     course_id: str
 
-@app.post("/dashboard/question")
+@app.post("/dashboard/question", tags=["Recherche"], summary="Recherche de message", description="Recherche sémantique d’un message à partir du texte d'une question.")
 def search(query: Query):
     result = search_similar_message(query.text)
 
@@ -86,7 +96,7 @@ def search(query: Query):
     else:
         return JSONResponse(content={"message": "Aucun résultat trouvé."})
 
-@app.post("/dashboard/threadquestion")
+@app.post("/dashboard/threadquestion", tags=["Threads"], summary="Messages d'un thread", description="Récupère tous les messages d’un fil de discussion spécifique.")
 def get_thread(query: ThreadQuery):
     """Récupère tous les messages d'un fil de discussion"""
     from services.dashboard_question import get_thread_messages  # Assurez-vous d'importer la fonction
@@ -140,7 +150,7 @@ async def dashboard_thread_post(request: Request, user: str = Depends(login_requ
         "messages": messages
     })
 
-@app.get("/dashboard/threads-cluster")
+@app.get("/dashboard/threads-cluster", tags=["Clusters"], summary="Dashboard des clusters de threads", description="Affiche tous les clusters détectés et leur visualisation BERTopic.")
 async def dashboard_threads_cluster(request: Request, user: str = Depends(login_required)):
     clusters = get_all_clusters()
     plot_html = get_bertopic_html()
@@ -149,11 +159,11 @@ async def dashboard_threads_cluster(request: Request, user: str = Depends(login_
         {"request": request, "user": user, "topics": clusters, "plot_html": plot_html}
     )
 
-@app.get("/dashboard/threads-cluster/{topic_id}")
+@app.get("/dashboard/threads-cluster/{topic_id}", tags=["Clusters"], summary="Messages d’un cluster", description="Affiche tous les messages liés à un topic (cluster) donné.")
 def get_cluster_messages(topic_id: int):
     return get_messages_by_topic(topic_id)
 
-@app.get("/dashboard/users-cluster")
+@app.get("/dashboard/users-cluster", tags=["Utilisateurs"], summary="Dashboard de clustering utilisateurs", description="Analyse la similarité entre utilisateurs d’un cours.")
 async def dashboard_users_cluster(request: Request, user: str = Depends(login_required), selected_user: str = None):
     users = get_all_usernames()
     resultats = None
